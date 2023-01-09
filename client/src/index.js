@@ -11,7 +11,7 @@ const root = ReactDOM.createRoot(container);
 root.render(
     <BrowserRouter>
     <Routes>
-        <Route path="/" element={<Covid19 />} />
+        <Route path="/" element={<Covid19 />}  onEnter={document.title='covid19 map byTY'}/>
     </Routes>
     </BrowserRouter>
 );
