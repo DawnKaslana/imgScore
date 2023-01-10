@@ -1,13 +1,12 @@
 const mysql = require('../mysql');
 
 const selectInfo = (req, res) => {
-  console.log(req.query.type,req.query.location_key,req.query.date)
-  mysql('dawn.'+req.query.type)
+  mysql('dawn.sadasds')
   .select('*')
   .where('location_key',req.query.location_key)
   .orderBy('date', 'desc')
   .then((result)=>{
-    res.send(result.pop())
+    res.send(result)
   }).catch((err) => {
     console.error(err)  
   })
