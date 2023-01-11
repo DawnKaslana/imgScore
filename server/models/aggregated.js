@@ -23,6 +23,7 @@ const selectInfo = (req, res) => {
       ageField.forEach((key,index)=>{
         arr[key]=0
         data.forEach((item)=>{
+          item[key] =  parseInt(item[key])
           if (item[key]>arr[key])arr[key] = item[key]
         })
       })
@@ -41,6 +42,7 @@ const selectInfo = (req, res) => {
         sexField.forEach((key,index)=>{
           arr[key]=0
           data.forEach((item)=>{
+            item[key] =  parseInt(item[key])
             if (item[key]>arr[key])arr[key] = item[key]
           })
         })

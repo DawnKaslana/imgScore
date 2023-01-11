@@ -344,23 +344,23 @@ const LineChart = ({info, selectedIndex}) => {
     if (selectedIndex === 1){
         info.forEach((item)=>{
             data.push(
-                {"month": item.date.substring(0,7),"value": item.cumulative_confirmed,"category": "累积确诊人数"},
-                {"month": item.date.substring(0,7),"value": item.cumulative_deceased,"category": "累积死亡人数"},
-                {"month": item.date.substring(0,7),"value": item.cumulative_recovered,"category": "累积復原人数"},
-                {"month": item.date.substring(0,7),"value": item.cumulative_tested,"category": "累积测试人数"},
-                {"month": item.date.substring(0,7),"value": item.new_confirmed,"category": "新增确诊人数"},
-                {"month": item.date.substring(0,7),"value": item.new_deceased,"category": "新增死亡人数"},
-                {"month": item.date.substring(0,7),"value": item.new_recovered,"category": "新增復原人数"},
-                {"month": item.date.substring(0,7),"value": item.new_tested,"category": "新增测试人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.cumulative_confirmed),"category": "累积确诊人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.cumulative_deceased),"category": "累积死亡人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.cumulative_recovered),"category": "累积復原人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.cumulative_tested),"category": "累积测试人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.new_confirmed),"category": "新增确诊人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.new_deceased),"category": "新增死亡人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.new_recovered),"category": "新增復原人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.new_tested),"category": "新增测试人数"},
             )
         })
     } else {
         info.forEach((item)=>{
             data.push(
-                {"month": item.date.substring(0,7),"value": item.new_persons_vaccinated,"category": "新增接种疫苗人数"},
-                {"month": item.date.substring(0,7),"value": item.cumulative_persons_vaccinated,"category": "累积接种疫苗人数"},
-                {"month": item.date.substring(0,7),"value": item.new_persons_fully_vaccinated,"category": "新增完全接种疫苗人数"},
-                {"month": item.date.substring(0,7),"value": item.cumulative_persons_fully_vaccinated,"category": "累积完全接种疫苗人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.cumulative_persons_fully_vaccinated),"category": "累积完全接种疫苗人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.cumulative_persons_vaccinated),"category": "累积接种疫苗人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.new_persons_fully_vaccinated),"category": "新增完全接种疫苗人数"},
+                {"month": item.date.substring(0,7),"value": parseInt(item.new_persons_vaccinated),"category": "新增接种疫苗人数"},
             )
         })
     }
@@ -370,7 +370,17 @@ const LineChart = ({info, selectedIndex}) => {
       yField: 'value',
       seriesField: 'category',
       legend:{
-        flipPage: false
+        flipPage: false,
+        selected: selectedIndex === 1?{
+            '累积确诊人数': true,
+            '累积死亡人数': true,
+            '累积復原人数': true,
+            '累积测试人数':true,
+            '新增确诊人数':false,
+            '新增死亡人数':false,
+            '新增復原人数':false,
+            '新增测试人数':false
+        }:{'累积完全接种疫苗人数':true,'累积接种疫苗人数':true,'新增完全接种疫苗人数':false,'新增接种疫苗人数':false},
       },
       yAxis: {
         label: {
