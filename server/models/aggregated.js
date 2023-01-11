@@ -1,15 +1,68 @@
 const mysql = require('../mysql');
 
+let sexField = ['cumulative_confirmed_female', 'cumulative_confirmed_male','cumulative_deceased_female','cumulative_deceased_male','cumulative_recovered_female','cumulative_recovered_male','cumulative_tested_female','cumulative_tested_male']
+let ageField = []
+for (let i=0;i<=9;i++){
+  ageField.push('cumulative_confirmed_age_'+i)
+  ageField.push('cumulative_deceased_age_'+i)
+  ageField.push('cumulative_recovered_age_'+i)
+  ageField.push('cumulative_tested_age_'+i)
+}
+
 const selectInfo = (req, res) => {
-  mysql('dawn.sadasds')
+  let index = parseInt(req.query.index)
+  let result = {}
+  mysql('dawn.age')
   .select('*')
   .where('location_key',req.query.location_key)
-  .orderBy('date', 'desc')
-  .then((result)=>{
-    res.send(result)
-  }).catch((err) => {
+  .orderBy('date', 'asc')
+  .then((data)=>{
+    //因為數據不整齊，需要遍歷一次找每個欄位最大直
+    if (data.length){
+      let arr={}
+      ageField.forEach((key,index)=>{
+        arr[key]=0
+        data.forEach((item)=>{
+          if (item[key]>arr[key])arr[key] = item[key]
+        })
+      })
+      result.age = arr
+    } else {
+      result.age = 0
+    }
+  }).then(()=>{
+    mysql('dawn.sex')
+    .select(sexField)
+    .where('location_key',req.query.location_key)
+    .orderBy('date', 'asc')
+    .then((data)=>{
+      if (data.length){
+        let arr={}
+        sexField.forEach((key,index)=>{
+          arr[key]=0
+          data.forEach((item)=>{
+            if (item[key]>arr[key])arr[key] = item[key]
+          })
+        })
+        result.sex = arr
+      } else {
+        result.sex = 0
+      }
+    }).then(()=>{
+      mysql(index === 1? 'dawn.epid':'dawn.vacc')
+      .select('*')
+      .where('location_key',req.query.location_key)
+      .where('date','like','%-01')
+      .orderBy('date', 'asc')
+      .then((data)=>{
+        result.line = data.length?data:0
+        res.send(result)
+      })
+    })
+  }) .catch((err) => {
     console.error(err)  
   })
+
 }
 
 const selectByDate = (req, res) => {

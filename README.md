@@ -8,13 +8,13 @@ Tutorial
 
 step 1
 ---
-在专案的根目录下执行
+在专案的根目录下执行 (-d 后台执行)
 ```
-docker-compose up -d --build
+docker-compose up --build
 ```
 or 看系统安装的工具
 ```
-docker compose up -d --build
+docker compose up --build
 ```
 会自动建立前后端与资料库<br>
 前端port:3000<br>
@@ -37,10 +37,9 @@ docker ps -a
 ```
 npm i package_name
 ```
-一般来说需要安装以下这几个
+需要安装以下这几个套件
 ```
-/app # npm i @antv/l7 js-file-download dayjs @mui/x-date-pickers
-```
+/app # npm i @antv/l7 js-file-download dayjs @mui/x-date-pickers @antv/larkmap antd moment @ant-design/plots
 
 step 3
 ---

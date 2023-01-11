@@ -86,9 +86,9 @@ def get_len(filename):
         print(len(f.readlines()))
 
 def insert_to_mysql():
-    table = 'dawn.sex'
-    csv_file_name = './temp_data_sex.csv'
-    column_num = 30
+    table = 'dawn.age'
+    csv_file_name = './temp_data_age.csv'
+    column_num = 152 #age: 152
     # 建立Connection物件
     conn = pymysql.connect(**db_settings)
     cursor = conn.cursor()
@@ -149,7 +149,6 @@ def write_to_json():
 
     cursor.close()
 
-# insert_to_mysql(onlyCountry=True)
 import fiona
 import random
 

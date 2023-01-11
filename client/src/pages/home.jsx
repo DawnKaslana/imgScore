@@ -47,6 +47,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { LineLayer, Popup, PolygonLayer } from '@antv/l7';
 import {  Zoom, Scale, ExportImage, Fullscreen, Control } from '@antv/l7';
 import { LarkMap, useScene, CustomControl } from '@antv/larkmap';
+// Chart import
+import { Pie, G2, Column, Line } from '@ant-design/plots';
 
 // other func import
 import fileDownload from 'js-file-download';
@@ -61,8 +63,8 @@ import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import geoData from '../json/geo.json';
 
 // Config
-// const api_url = 'http://';
-const api_url = 'http://127.0.0.1:3001';
+const api_url = 'http://47.108.179.63:3001';
+//const api_url = 'http://127.0.0.1:3001';
 axios.defaults.withCredentials = false
 
 const drawerWidth = '30%';
@@ -118,17 +120,7 @@ const nameMapDict = {'cumulative_confirmed':'累积确诊人数', 'cumulative_de
                                             'new_persons_fully_vaccinated':'新增接种疫苗人数(全)', 'new_persons_vaccinated':'新增接种疫苗人数'}
 
 //Map Compoments
-const colorA = [ 
-'rgb(214,165,152,0)',
-'#FFF3DE',
-'#FFE5B5',
-'#FFDA96',
-'#FFCC6E',
-'#FFABAB',
-'#FF8C8C',
-'#FF5F5F',
-'#B20000', 
-];
+const colorA = [ 'rgb(214,165,152,0)','#FFF3DE','#FFE5B5','#FFDA96','#FFCC6E','#FFABAB','#FF8C8C','#FF5F5F','#B20000'];
 const colorB = [ 'rgb(255,255,217,0)','rgb(255,255,217)', 'rgb(237,248,177)', 'rgb(199,233,180)', 'rgb(127,205,187)', 'rgb(65,182,196)', 'rgb(29,145,192)', 'rgb(34,94,168)', 'rgb(12,44,132)' ];
 
 const config = {
@@ -190,7 +182,7 @@ const MyPolygonLayer = ({source, selectedIndex, showKeyList, showKey, labels, ne
         });
 
         layer.on('click', e => {
-            handleDrawerOpen(e.feature.properties.location_key)
+            handleDrawerOpen(e.feature.properties)
         });
 
         scene.addLayer(layer)
@@ -231,6 +223,165 @@ const exportImage = new ExportImage({
     }
 });
 
+//Chart compoments
+const AgeChart = ({info}) => {
+    //console.log(info)
+    const range = ["0-9","10-19","20-29", "30-39", "40-49",
+                                "50-59", "60-69","70-79","80-89","90-"]
+    let data = []
+    for (let i=0;i<=9;i++){
+        data.push( {
+            age: range[i],
+            value: info['cumulative_confirmed_age_'+i],
+            type: '确诊人数',
+        })
+        data.push( {
+            age: range[i],
+            value: info['cumulative_deceased_age_'+i],
+            type: '死亡人数',
+        })
+        data.push( {
+            age: range[i],
+            value: info['cumulative_recovered_age_'+i],
+            type: '復原人数',
+        })
+        data.push( {
+            age: range[i],
+            value: info['cumulative_tested_age_'+i],
+            type: '测试人数',
+        })
+    }
+      const config = {
+        data,
+        isStack: true,
+        xField: 'age',
+        yField: 'value',
+        seriesField: 'type',
+        color: ['#6096f5','#545454','#3cd8a9','#fabc33'],
+        label: {
+            // 可手动配置 label 数据标签位置
+            position: 'middle',
+            // 'top', 'bottom', 'middle'
+            // 可配置附加的布局方法
+            layout: [
+              // 柱形图数据标签位置自动调整
+              {
+                type: 'interval-adjust-position',
+              }, // 数据标签防遮挡
+              {
+                type: 'interval-hide-overlap',
+              }, // 数据标签文颜色自动调整
+              {
+                type: 'adjust-color',
+              },
+            ],
+        },
+        xAxis: {
+          label: {
+            autoHide: true,
+            autoRotate: false,
+          },
+        },
+        meta: {
+          age: {
+            alias: '年齡段',
+          },
+          value: {
+            alias: '人數',
+          },
+        },
+      };
+      return <Column {...config} />;
+};
+
+const SexChart = ({info}) => {
+    //console.log(info)
+    const G = G2.getEngine('canvas');
+    const data = [{type: '确诊人数(女)',value: info.cumulative_confirmed_female},
+                                {type: '确诊人数(男)',value: info.cumulative_confirmed_male},
+                                {type: '死亡人数(女)',value: info.cumulative_deceased_female},
+                                {type: '死亡人数(男)',value: info.cumulative_deceased_male},
+                                {type: '復原人数(女)',value: info.cumulative_recovered_female},
+                                {type: '復原人数(男)',value: info.cumulative_recovered_male},
+                                {type: '测试人数(女)',value: info.cumulative_tested_female},
+                                {type: '测试人数(男)',value: info.cumulative_tested_male},];
+    const config = {
+        appendPadding: 20,
+        data,
+        angleField: 'value',
+        colorField: 'type',
+        color: ['#CA82FF','#00BDBD','darkred','darkblue','pink','lightblue','#AC3BFF','#009E00'],
+        radius: 0.9,
+        label: {
+            type: 'inner',
+            offset: '-30%',
+            content: ({ percent }) => `${(percent * 100).toFixed(0)}%`,
+            style: {
+            fontSize: 18,
+            textAlign: 'center',
+            },
+        },
+        legend: {
+            selected: {
+                '确诊人数(女)': true,
+                '确诊人数(男)': true,
+                '死亡人数(女)': false,
+                '死亡人数(男)':false,
+                '復原人数(女)':false,
+                '復原人数(男)':false,
+                '测试人数(女)':false,
+                '测试人数(男)':false
+            },
+          },
+        interactions: [{type: 'element-active',},  {type: 'element-selected'},],
+        };
+        return <Pie {...config} />;
+}
+
+const LineChart = ({info, selectedIndex}) => {
+    //console.log(info)
+    let data = []
+    if (selectedIndex === 1){
+        info.forEach((item)=>{
+            data.push(
+                {"month": item.date.substring(0,7),"value": item.cumulative_confirmed,"category": "累积确诊人数"},
+                {"month": item.date.substring(0,7),"value": item.cumulative_deceased,"category": "累积死亡人数"},
+                {"month": item.date.substring(0,7),"value": item.cumulative_recovered,"category": "累积復原人数"},
+                {"month": item.date.substring(0,7),"value": item.cumulative_tested,"category": "累积测试人数"},
+                {"month": item.date.substring(0,7),"value": item.new_confirmed,"category": "新增确诊人数"},
+                {"month": item.date.substring(0,7),"value": item.new_deceased,"category": "新增死亡人数"},
+                {"month": item.date.substring(0,7),"value": item.new_recovered,"category": "新增復原人数"},
+                {"month": item.date.substring(0,7),"value": item.new_tested,"category": "新增测试人数"},
+            )
+        })
+    } else {
+        info.forEach((item)=>{
+            data.push(
+                {"month": item.date.substring(0,7),"value": item.new_persons_vaccinated,"category": "新增接种疫苗人数"},
+                {"month": item.date.substring(0,7),"value": item.cumulative_persons_vaccinated,"category": "累积接种疫苗人数"},
+                {"month": item.date.substring(0,7),"value": item.new_persons_fully_vaccinated,"category": "新增完全接种疫苗人数"},
+                {"month": item.date.substring(0,7),"value": item.cumulative_persons_fully_vaccinated,"category": "累积完全接种疫苗人数"},
+            )
+        })
+    }
+    const config = {
+      data,
+      xField: 'month',
+      yField: 'value',
+      seriesField: 'category',
+      legend:{
+        flipPage: false
+      },
+      yAxis: {
+        label: {
+          // 数值格式化为千分位
+          formatter: (v) => `${v}`.replace(/\d{1,3}(?=(\d{3})+$)/g, (s) => `${s},`),
+        },
+      },
+    };
+  
+    return <Line {...config} />;
+  };
 
 //Main
 export function Home() {
@@ -250,16 +401,19 @@ export function Home() {
     const [labels, setLabels] = useState([]);
 
     const [open, setOpen] = useState(false);
-    const [local, setLocal] = useState('');
+    const [localProp, setLocalProp] = useState({});
     const [info, setInfo] = useState([]);
 
-    const handleDrawerOpen = (location_key) => {
-        setLocal(location_key)
-        console.log(api_url+'/selectInfo?location_key='+location_key)
+    const handleDrawerOpen = (prop) => {
+        setInfo(null)
+        //console.log(prop)
+        setLocalProp(prop)
+        console.log(api_url+'/selectInfo?location_key='+prop.location_key+'&index='+selectedIndex)
         //歷年該國家的 累積感染人數年齡數據 也就是說累積到最後一日數據
-        axios.get(api_url+'/selectInfo?location_key='+location_key)
+        axios.get(api_url+'/selectInfo?location_key='+prop.location_key+'&index='+selectedIndex)
         .then(res => {
-            console.log(res.data)
+            //console.log(res.data)
+            setInfo(res.data)
         })
         if (!open){
             setOpen(true)
@@ -286,7 +440,7 @@ export function Home() {
         })
         setShowKey(val);
         setLabels(getRange(valArr));
-    };
+    };  
 
     const handleSliderChange = (event, newValue) => {
             if (timeRange === 1){
@@ -310,6 +464,7 @@ export function Home() {
     const handleListItemClick = (event, index) => {
         setSource(null);
         setSelectedIndex(index);
+        setOpen(false)
         
         if (index === 1){
             setShowKey('cumulative_confirmed')
@@ -565,35 +720,48 @@ export function Home() {
         </DrawerHeader>
         <Divider />
         <Box sx={{display:'flex',flexDirection:'column'}}>
-            <Card sx={{ minWidth: '30vw', mr:1, ml:1, mt:3 }}>
+            <Card sx={{ minWidth: '25vw', mr:2, ml:2, mt:3 }}>
             <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
-                {'name'}
+                {localProp?localProp.name:'未选择国家'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                {'lo_key'}
+                {localProp?localProp.location_key:''}
                 </Typography>
             </CardContent>
             </Card>
-            <Card sx={{ minWidth: '30vw', mr:1, ml:1 ,mt:3}}>
+            {selectedIndex === 1?
+            <Card sx={{ minWidth: '25vw', mr:2, ml:2 ,mt:3}}>
             <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
-                {'累積感染人數年齡數據(長條圖年齡層)'}
+                {'累积感染人数年龄分布'}
                 </Typography>
+                {
+                    info? info.age  ? <AgeChart info={info.age}/>:'该国家没有此类数据':''
+                }
             </CardContent>
-            </Card>
-            <Card sx={{ minWidth: '30vw', mr:1, ml:1 ,mt:3}}>
+            </Card>:''
+            }
+            {selectedIndex === 1?
+            <Card sx={{ minWidth: '25vw', mr:2, ml:2 ,mt:3}}>
             <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
-                {'累積感染人數性別數據(圓餅性別)'}
+                {'累積感染人数性别分布'}
                 </Typography>
+                {
+                    info?info.sex ?<SexChart info={info.sex}/>:'该国家没有此类数据':''
+                }
             </CardContent>
-            </Card>
-            <Card sx={{ minWidth: '30vw', mr:1, ml:1 ,mt:3}}>
+            </Card>:''
+            }
+            <Card sx={{ minWidth: '25vw', mr:2, ml:2 ,mt:3}}>
             <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
-                {'歷年累積感染人數(折線分月)'}
+                {selectedIndex === 1?'历年感染人数变化':'历年接种疫苗人数变化'}
                 </Typography>
+                {
+                    info? info.line?<LineChart  info={info.line} selectedIndex={selectedIndex}/>:'该国家没有此类数据':''
+                }
             </CardContent>
             </Card>
         </Box>
