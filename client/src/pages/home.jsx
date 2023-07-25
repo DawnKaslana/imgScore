@@ -65,7 +65,7 @@ const NavBar = ({userId}) => {
                         color: 'inherit', 
                         textDecoration: 'none', }}
                 >
-                    用戶名: {userId === -1?'未登入':cookies.get('user_name')}
+                    用戶名: {!userId?'未登入':cookies.get('user_name')}
                 </Typography>
                 <Box sx={{ flexGrow: 1 }} />
                 <Button size="large"
@@ -83,12 +83,15 @@ const NavBar = ({userId}) => {
 
 //Main
 export function Home() {
+    const navigate = useNavigate();
+    
     const [userId, setUserId] = useState(cookies.get('user_id'));
     const [fileList, setFileList] = useState([]);
 
     const modulesFiles =  require.context('../../public/images/', false,  /\.(png|jpg|jpeg)/)
 
     useEffect(() => {
+        if (!userId) navigate('/selectUser');
         let list = []
         modulesFiles.keys().forEach((module_item, index) => {
             list.push(module_item.split('/')[1])
@@ -105,7 +108,8 @@ export function Home() {
         <NavBar userId={userId}/>
 
         {fileList?.map((item)=>(
-            <Box  sx={{
+            <Box key={item}
+            sx={{
                 display: 'flex',
                 flexDirection:'column',
                 alignItem:'center'

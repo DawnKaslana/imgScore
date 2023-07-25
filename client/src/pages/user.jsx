@@ -215,7 +215,7 @@ export function User() {
             variant="h5"
             noWrap
             component="div"
-            sx={{mt:'10vh', mb:'10px'}}
+            sx={{mt:'5vh', mb:'10px'}}
         >
             選擇用戶
         </Typography>
