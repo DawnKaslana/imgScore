@@ -1,22 +1,27 @@
 const cors = require('cors');
 const express = require('express');
-const app = express();
+const bodyParser = require('body-parser')
 const mysql = require('./mysql');
 
+const app = express();
+
 app.use(cors());
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json())
 
 app.listen(process.env.REACT_APP_SERVER_PORT, () => {
   console.log(`App server now listening on port ${process.env.REACT_APP_SERVER_PORT}`);
 });
 
+//test backend
 app.get('/', (req, res) => {
-  res.send('OUO')
+  res.send('OAO')
 });
-
 
 //Connect Mysql Test
 const test = (req, res) => {
-  mysql('sample').select('*')
+  mysql('user').select('*')
   .then((result)=>{
     res.send(result)
   }).catch((err) => {
@@ -26,11 +31,12 @@ const test = (req, res) => {
 app.get('/test', (req, res) => test(req, res));
 
 
-//aggregated
-const {selectByDate, selectByMonth, selectByYear, selectInfo}  = require('./models/aggregated');
-app.get('/selectByDate', (req, res) => selectByDate(req, res));
-app.get('/selectByMonth', (req, res) => selectByMonth(req, res));
-app.get('/selectByYear', (req, res) => selectByYear(req, res));
-app.get('/selectInfo', (req, res) => selectInfo(req, res));
+//user
+const {getUserList, addUser, putUser, deleteUser}  = require('./models/user');
+app.get('/getUserList', (req, res) => getUserList(req, res));
+app.post('/addUser', (req, res) => addUser(req, res));
+app.put('/putUser', (req, res) => putUser(req, res));
+app.delete('/deleteUser', (req, res) => deleteUser(req, res));
+
 
 

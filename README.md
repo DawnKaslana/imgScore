@@ -40,12 +40,4 @@ docker ps -a
 npm i package_name
 ```
 需要安装以下这几个套件
-```
-/app # npm i @antv/l7 js-file-download dayjs @mui/x-date-pickers @antv/larkmap antd moment @ant-design/plots
-```
-step 3
----
-需要手动在资料库汇入csv资料表：[下载地址](https://drive.google.com/file/d/1an2cm419RGSvB3faxT-4oyPyP-cSMwCw/view?usp=share_link)<br>
-四张资料表分别命名为epid vacc sex age<br>
-也可以使用process.py中的程序插入资料，速度较快，但需要先手动汇入标题列<br>
-登入帐户和密码为root<br>
+
