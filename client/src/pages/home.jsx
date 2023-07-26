@@ -114,7 +114,7 @@ export function Home() {
                 flexDirection:'column',
                 alignItem:'center'
             }}>
-                <Box sx={{ fontSize:"1.5rem",
+                <Box sx={{ fontSize:"1.2rem",
                     border:'black 3px solid',
                     p:'10px',
                     display: 'flex',
@@ -123,8 +123,7 @@ export function Home() {
                 >
                     {item}
                 </Box>
-                <Box sx={{ mb:'10px',
-                    borderLeft:'black 3px solid',
+                <Box sx={{ borderLeft:'black 3px solid',
                     borderRight:'black 3px solid',
                     display: 'flex',
                     flexDirection:'column',

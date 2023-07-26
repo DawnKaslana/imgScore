@@ -1,5 +1,5 @@
-# covid19 map web url
-http://47.108.179.63:3000/
+# imgScore web url
+http://127.0.0.1:3000/
 
 # REACT-NODEJS-MYSQL-DOCKER 
 
@@ -40,4 +40,7 @@ docker ps -a
 npm i package_name
 ```
 需要安装以下这几个套件
+```
+npm i universal-cookie
+```
 

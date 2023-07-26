@@ -139,6 +139,7 @@ export function User() {
     };
 
     const handleConfirmClose = () => {
+        setInput('');
         setConfirmOpen(false)
     };
 
@@ -201,10 +202,10 @@ export function User() {
 
     const setUserCookies = (item) => {
         cookies.set('user_id', item.user_id, 
-            { path: '/',secure: true,sameSite :true}
+            { path: '/',secure: false,sameSite :false}
         );
         cookies.set('user_name', item.user_name, 
-            { path: '/',secure: true,sameSite :true}
+            { path: '/',secure: false,sameSite :false}
         );
         navigate('/');
     }
@@ -219,7 +220,7 @@ export function User() {
         >
             選擇用戶
         </Typography>
-        <Box width='80vw' sx={{border:'#1783d3 3px solid', borderRadius:'10px'}} >
+        <Box sx={{width:{xs: '90vw', sm: '80vw', md:'60vw', lg:'40vw'}, border:'#1783d3 3px solid', borderRadius:'10px'}} >
             <Box sx={{
                 display: 'flex',
                 flexDirection:'row',
@@ -252,7 +253,7 @@ export function User() {
                 </Button>
             </Box>
             <List sx={{ 
-                maxWidth: '80vw',
+                maxWidth: {xs: '90vw', sm: '80vw', md:'60vw', lg:'40vw'},
                 bgcolor: 'background.paper',
                 p:'10px', 
                 borderBottomLeftRadius: '10px',
@@ -277,6 +278,7 @@ export function User() {
                         </IconButton>
                         <IconButton aria-label="delete" onClick={()=>{
                             setSelectUser(item.user_id)
+                            setInput(item.user_name)
                             setConfirmOpen(true)}
                             }>
                             <DeleteIcon />
@@ -313,7 +315,7 @@ export function User() {
             </DialogActions>
         </Dialog>
         <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-            <DialogTitle>確認刪除</DialogTitle>
+            <DialogTitle>確認刪除用戶{input}</DialogTitle>
             <DialogActions sx={{display:'flex',justifyContent:'space-between'}}>
             <Button sx={{ml:'15px'}} variant="contained" onClick={handleConfirmClose}>Cancel</Button>
             <Button sx={{mr:'15px'}} variant="contained" color="secondary" onClick={deleteUser}>Delete</Button>

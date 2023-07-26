@@ -42,7 +42,6 @@ const addUser = (req, res) => {
 }
 
 const putUser = (req, res) => {
-  console.log(req.body)
   let user_id = req.body.user_id
   let user_name = req.body.user_name
 
