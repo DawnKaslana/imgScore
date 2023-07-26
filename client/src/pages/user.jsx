@@ -1,45 +1,25 @@
 // React and Basic import
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
-import { darkTheme } from '../css/theme';
 import { styled,alpha } from '@mui/material/styles';
 import Cookies from 'universal-cookie';
 
 // React MUI import
 import Box from '@mui/material/Box';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import Toolbar from '@mui/material/Toolbar';
-import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import AppBar from '@mui/material/AppBar';
-import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import Slider from '@mui/material/Slider';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
-import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Tooltip from '@mui/material/Tooltip';
 import InputBase from '@mui/material/InputBase';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import Alert from '@mui/material/Alert';
 
 //Icon import
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
@@ -47,6 +27,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 
 //api
 import api from '../api.js'
@@ -143,11 +125,11 @@ export function User() {
         setConfirmOpen(false)
     };
 
-    const handleSearchChange = (value) => {
-        setSearchInput(value)
+    const handleSearchChange = (event) => {
+        setSearchInput(event.target.value)
         let newUserList = []
         userList.forEach((item) => {
-            if (item.user_name.toLowerCase().includes(value.toLowerCase())){
+            if (item.user_name.toLowerCase().includes(event.target.value.toLowerCase())){
                 newUserList.push(item)
             }
         });
@@ -210,17 +192,40 @@ export function User() {
         navigate('/');
     }
 
+    const updateImages = () => {
+        api({url:'/updateFileList'})
+        .then((res) => {
+            if (res.data === 'updated') alert('更新完畢')
+            else alert('更新失敗')
+        })
+    }
+
     return(
     <Box sx={{height: '100vh',display: 'flex', flexDirection:'column', alignItems:'center'}}>
-        <Typography
-            variant="h5"
-            noWrap
-            component="div"
-            sx={{mt:'5vh', mb:'10px'}}
-        >
-            選擇用戶
-        </Typography>
-        <Box sx={{width:{xs: '90vw', sm: '80vw', md:'60vw', lg:'40vw'}, border:'#1783d3 3px solid', borderRadius:'10px'}} >
+        <Box sx={{display: 'flex',
+            width:{xs: '90vw', sm: '80vw', md:'60vw', lg:'40vw'}, 
+            flexDirection:'row',
+            alignItems:'center',
+            justifyContent:'center',
+            mb:'10px', mt:'5vh'}}>
+            <Typography
+                variant="h5"
+                noWrap
+                component="div"
+            >
+                選擇用戶
+            </Typography>
+            <Box sx={{ flexGrow: 1 }}/>
+            <Button variant="outlined" startIcon={<AddToPhotosIcon />} onClick={updateImages}>
+                更新圖片
+            </Button>
+            <Button sx={{ml:2}} variant="outlined" startIcon={<SaveAltIcon />}>
+                匯出總記錄
+            </Button>
+        </Box>
+        <Box sx={{width:{xs: '90vw', sm: '80vw', md:'60vw', lg:'40vw'},
+                border:'#1783d3 3px solid',
+                borderRadius:'10px'}} >
             <Box sx={{
                 display: 'flex',
                 flexDirection:'row',
@@ -239,7 +244,7 @@ export function User() {
                     <StyledInputBase
                     placeholder="Search…"
                     inputProps={{ 'aria-label': 'search' }}
-                    onChange={(e)=>handleSearchChange(e.target.value)}
+                    onChange={handleSearchChange}
                     />
                 </Search>
                 <Box sx={{flexGrow:1}}/>

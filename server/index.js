@@ -37,6 +37,16 @@ app.get('/getUserList', (req, res) => getUserList(req, res));
 app.post('/addUser', (req, res) => addUser(req, res));
 app.put('/putUser', (req, res) => putUser(req, res));
 app.delete('/deleteUser', (req, res) => deleteUser(req, res));
+//file
+const {getFileList, getFile, updateFileList, getFileNumber}  = require('./models/file');
+app.get('/getFileList', (req, res) => getFileList(req, res));
+app.get('/getFile', (req, res) => getFile(req, res));
+app.get('/updateFileList', (req, res) => updateFileList(req, res));
+app.get('/getFileNumber', (req, res) => getFileNumber(req, res));
+//score
+const {showScore, saveScore}  = require('./models/score');
+app.get('/showScore', (req, res) => showScore(req, res));
+app.put('/saveScore', (req, res) => saveScore(req, res));
 
 
 

@@ -41,7 +41,7 @@ CREATE TABLE `file` (
 CREATE TABLE `score` (
   `id` int(255) NOT NULL,
   `user_id` int(255) NOT NULL,
-  `file_id` int(255) NOT NULL,
+  `file_name` varchar(255) NOT NULL,
   `score` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -59,11 +59,6 @@ INSERT INTO `user` (`user_id`, `user_name`) VALUES
 (7, 'Uranus'),
 (8, 'Neptune');
 
-INSERT INTO `file` (`file_id`, `file_name`) VALUES
-(1, 'test.jpg');
-
-INSERT INTO `score` (`id`,`user_id`, `file_id`,`score`) VALUES
-(1, 1, 1, 10);
 
 --
 -- Indexes for dumped tables
