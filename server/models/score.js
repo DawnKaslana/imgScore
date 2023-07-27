@@ -15,45 +15,57 @@ const isExist = (user_id, file_name) => {
   }
 
 const showScore = (req, res) => {
+    console.log(req.query)
   let user_id = req.query.user_id
-  mysql('score').select({user_id})
+  mysql('score').select('*').where({user_id})
   .then((result)=>{
-    res.send(result)
+    let list = {}
+    result.forEach(item => {
+        list[item.file_name] = item.score
+    });
+    res.send(list)
   }).catch((err) => {
     console.error(err)
   })
+}
+const addScore = (user_id, file_name, score) => {
+    return new Promise((resolve, reject) => {
+        mysql('score')
+            .insert({user_id, file_name,score})
+            .then((result)=>{
+                resolve(result)
+            }).catch((err) => {
+                reject(err)
+            })
+    })
+}
+const putScore = (user_id, file_name, score) => {
+    return new Promise((resolve, reject) => {
+        mysql('score')
+            .where({user_id, file_name})
+            .update({score})
+            .then((result)=>{
+                resolve(result)
+            }).catch((err) => {
+                reject(err)
+            })
+    })
 }
 
 const saveScore = (req, res) => {
     console.log(req.body)
     let user_id = req.body.user_id
-    let list = req.body.scoreList
+    let list = req.body.saveScoreList
 
-    for (let item in list) {
-        isExist(user_id, item).then(exist => {
-            if (!exist){
-                mysql('score').insert({user_id, file_name:item, score:list[item]})
-                .then((result)=>{
-                    console.log(result)
-                    res.send('ok')
-                }).catch((err) => {
-                    console.error(err)
-                })
-            } else {
-                mysql('score')
-                .where({user_id, file_name:item})
-                .update({score:list[item]})
-                .then((result)=>{
-                    console.log(result)
-                    res.send('ok')
-                }).catch((err) => {
-                    console.error(err)
-                })
-            }
-        }) 
-    }
+    list.forEach((item)=>{
+        console.log(item)
+        isExist(user_id, item.file_name).then((exist)=>{
+            if (exist) putScore(user_id, item.file_name, item.score)
+            else addScore(user_id, item.file_name, item.score)
+        })
+    })
 
-
+    res.send('ok')
 }
 
 module.exports = {

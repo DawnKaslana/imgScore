@@ -71,7 +71,7 @@ const NavBar = ({userId, saveScore}) => {
                     'aria-labelledby': 'menu-button',
                     }}
                 >
-                    <MenuItem onClick={saveScore}>
+                    <MenuItem onClick={()=>{saveScore();handleClose();}}>
                         <SaveIcon sx={{mr:2}} />
                         保存
                     </MenuItem>
@@ -128,7 +128,8 @@ export function Home() {
     
     const [userId, setUserId] = useState(cookies.get('user_id'));
     const [fileList, setFileList] = useState([]);
-    const [scoreList, setScoreList] = useState({});
+    const [scoreRecord, setScoreRecord] = useState({});
+    const [saveScoreList, setSaveScoreList] = useState([]);
 
     const [maxPage, setMaxPage] = useState(1);
     const [page, setPage] = useState(1);
@@ -152,11 +153,15 @@ export function Home() {
         .then((res)=>{
             setMaxPage(Math.ceil(res.data.count/10))
         })
+        // 獲取已保存分數
+        api({url:'/showScore', params:{user_id:userId}})
+            .then((res)=>{setScoreRecord(res.data);console.log(res.data)})
     },[]);
 
     useEffect(() => {
         // 後端從數據庫讀該頁圖片列表
-        api({url:'/getFileList', params:{page}}).then((res)=>{setFileList(res.data)})
+        api({url:'/getFileList', params:{page}})
+            .then((res)=>{setFileList(res.data)})
     },[page]);
 
     const handlePageChange = (event, value) => {
@@ -165,15 +170,18 @@ export function Home() {
     }
 
     const handleRadioChange = (file_name, value ) => {
-        scoreList[file_name] = value
+        setSaveScoreList([
+            ...saveScoreList,
+            { file_name, score: value }
+          ])
     }
 
     const saveScore = () => {
-        console.log(scoreList)
-        if (scoreList){
-            api({url:'/saveScore',method:'put',data:{scoreList,user_id:userId}})
+        console.log(saveScoreList)
+        if (saveScoreList.length){
+            api({url:'/saveScore',method:'put',data:{saveScoreList,user_id:userId}})
             .then((res)=>{console.log(res.data)})
-            setScoreList({})
+            setSaveScoreList([])
         }
     }
 
@@ -218,6 +226,7 @@ export function Home() {
                         justifyContent:'center', 
                         flexDirection:{xs:'row', md:'column'},
                         pl:{xs:0, md:3}}}
+                        defaultValue={scoreRecord[item.file_name]}
                         onChange={(event,value)=>handleRadioChange(item.file_name, value)}>
                         {[...Array(10).keys()].map((index)=>(
                             <FormControlLabel
