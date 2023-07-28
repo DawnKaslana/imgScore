@@ -16,7 +16,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 
 //Icon import
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
@@ -24,17 +25,22 @@ import MenuIcon from '@mui/icons-material/Menu';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ContentPasteSearchIcon from '@mui/icons-material/ContentPasteSearch';
 import SaveIcon from '@mui/icons-material/Save';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 //api
 import api,{file_url} from '../api.js'
 
+//other func
+import fileDownload from 'js-file-download'
+
 //cookie
 const cookies = new Cookies();
 
-const NavBar = ({userId, saveScore}) => {
+const NavBar = ({userId, userName, saveScore, exportScore}) => {
     const navigate = useNavigate();
 
     const logout = () => {
+        saveScore()
         cookies.remove('user_id', { path: '/' });
         cookies.remove('user_name', { path: '/' });
         navigate('/selectUser');
@@ -75,13 +81,13 @@ const NavBar = ({userId, saveScore}) => {
                         <SaveIcon sx={{mr:2}} />
                         保存
                     </MenuItem>
-                    <MenuItem onClick={handleClose}>
+                    <MenuItem onClick={()=>{exportScore();handleClose()}}>
                         <SaveAltIcon sx={{mr:2}} />
-                        匯出紀錄
+                        汇出纪录
                     </MenuItem>
                     <MenuItem onClick={handleClose}>
                         <ContentPasteSearchIcon sx={{mr:2}} />
-                        查看打分狀況
+                        查看打分状况
                     </MenuItem>
                 </Menu>
                 <Typography
@@ -106,7 +112,7 @@ const NavBar = ({userId, saveScore}) => {
                         color: 'inherit', 
                         textDecoration: 'none'}}
                 >
-                    {!userId?'未登入':cookies.get('user_name')}
+                    {!userId?'未登入':userName}
                 </Typography>
                 <Box sx={{ flexGrow: 1 }} />
                 <Button size="large"
@@ -125,18 +131,20 @@ const NavBar = ({userId, saveScore}) => {
 //Main
 export function Home() {
     const navigate = useNavigate();
+    const [open, setOpen] = useState(false);
     
     const [userId, setUserId] = useState(cookies.get('user_id'));
+    const [userName, setUserName] = useState(cookies.get('user_name'));
+
     const [fileList, setFileList] = useState([]);
-    const [scoreRecord, setScoreRecord] = useState({});
     const [saveScoreList, setSaveScoreList] = useState([]);
+    const [checkScore, setCheckScore] = useState({});
 
     const [maxPage, setMaxPage] = useState(1);
     const [page, setPage] = useState(1);
 
     // 遍歷前端圖片文件夾
-    //const modulesFiles =  require.context('../../public/images/', false,  /\.(png|jpg|jpeg)/)
-        
+    // const modulesFiles =  require.context('../../public/images/', false,  /\.(png|jpg|jpeg)/)
     // let list = []
     // modulesFiles.keys().forEach((module_item, index) => {
     //     list.push(module_item.split('/')[1])
@@ -153,30 +161,24 @@ export function Home() {
         .then((res)=>{
             setMaxPage(Math.ceil(res.data.count/10))
         })
-        // 獲取已保存分數
-        api({url:'/showScore', params:{user_id:userId}})
-            .then((res)=>{setScoreRecord(res.data);console.log(res.data)})
     },[]);
 
     useEffect(() => {
-        // 後端從數據庫讀該頁圖片列表
-        api({url:'/getFileList', params:{page}})
-            .then((res)=>{setFileList(res.data)})
+        // 後端從數據庫讀該頁圖片列表 ***join score table
+        api({url:'/getFileList', params:{page, user_id:userId}})
+            .then((res)=>setFileList(res.data))
     },[page]);
-
-    const handlePageChange = (event, value) => {
-        window.scrollTo(0, 0)
-        setPage(value);
-    }
 
     const handleRadioChange = (file_name, value ) => {
         setSaveScoreList([
             ...saveScoreList,
             { file_name, score: value }
           ])
+        checkScore[file_name] = value
     }
 
     const saveScore = () => {
+        console.log('saveScoreList:')
         console.log(saveScoreList)
         if (saveScoreList.length){
             api({url:'/saveScore',method:'put',data:{saveScoreList,user_id:userId}})
@@ -185,12 +187,59 @@ export function Home() {
         }
     }
 
+    const exportScore = () => {
+        api({url:'/exportScore',params:{user_id:userId}})
+            .then((res)=>{
+                fileDownload(res.data, userName+".csv")
+            })
+    }
+
+    const checkFullScore = (value) => {
+        return new Promise((resolve, reject) => {
+            let ok = true;
+            //if (value > page){
+                for (let item of fileList){
+                    if (!item.score && !checkScore[item.file_name]) {
+                        ok = false; break;
+                    }
+                }
+            //}
+            resolve(ok)
+        })
+    }
+
+    const handlePageChange = (event, value) => {
+        //檢查空值
+        checkFullScore(value).then((ok)=>{
+            if (ok) {
+                saveScore()
+                setPage(value);
+                window.scrollTo(0, 0);
+            } else {
+                setOpen(true)
+            }
+        })
+    }
+
     return(
     <Box>
-        <NavBar userId={userId} saveScore={saveScore}/>
-        
+        <NavBar userId={userId} userName={userName} saveScore={saveScore} exportScore={exportScore}/>
+
+        <Snackbar
+            anchorOrigin={{vertical:'top',horizontal:'center'}}
+            open={open}
+            onClose={()=>setOpen(false)}
+            sx={{width:'100%'}}>
+            <Alert icon={<ErrorOutlineIcon sx={{ fontSize: '1.2em' }} />} severity="error"
+                sx={{ width:'100%',
+                mt:5,ml:1,mr:1,
+                fontSize:'1.2em'}}>
+                有图片未打分！
+            </Alert>
+        </Snackbar>
+
         <Box sx={{pt:2,pb:2, display: 'flex',justifyContent:'center'}}>
-            <Pagination  count={maxPage} page={page} onChange={handlePageChange}  variant="outlined" color="primary" />
+            <Pagination count={maxPage} page={page} onChange={handlePageChange}  variant="outlined" color="primary" />
         </Box>
 
         {fileList?.map((item)=>(
@@ -226,7 +275,7 @@ export function Home() {
                         justifyContent:'center', 
                         flexDirection:{xs:'row', md:'column'},
                         pl:{xs:0, md:3}}}
-                        defaultValue={scoreRecord[item.file_name]}
+                        defaultValue={item.score}
                         onChange={(event,value)=>handleRadioChange(item.file_name, value)}>
                         {[...Array(10).keys()].map((index)=>(
                             <FormControlLabel

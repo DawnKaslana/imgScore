@@ -22,7 +22,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 
 //Icon import
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -32,6 +31,9 @@ import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 
 //api
 import api from '../api.js'
+
+//other func
+import fileDownload from 'js-file-download'
 
 //cookie
 const cookies = new Cookies();
@@ -150,7 +152,7 @@ export function User() {
             })
         } else {
             setError(true)
-            setHelperText('請輸入用戶名')
+            setHelperText('请输入用户名')
         }
     }
 
@@ -168,7 +170,7 @@ export function User() {
             })
         } else {
             setError(true)
-            setHelperText('請輸入用戶名')
+            setHelperText('请输入用户名')
         }
     }
 
@@ -195,9 +197,17 @@ export function User() {
     const updateImages = () => {
         api({url:'/updateFileList'})
         .then((res) => {
-            if (res.data === 'updated') alert('更新完畢')
+            if (res.data === 'updated') alert('更新完毕')
             else alert('更新失敗')
         })
+    }
+
+    const exportAllScore = () => {
+        api({url:'/exportAllScore'})
+            .then((res)=>{
+                
+                fileDownload(res.data, "all_user_score.csv")
+            })
     }
 
     return(
@@ -213,14 +223,14 @@ export function User() {
                 noWrap
                 component="div"
             >
-                選擇用戶
+                选择用户
             </Typography>
             <Box sx={{ flexGrow: 1 }}/>
             <Button variant="outlined" startIcon={<AddToPhotosIcon />} onClick={updateImages}>
-                更新圖片
+                更新图片
             </Button>
-            <Button sx={{ml:2}} variant="outlined" startIcon={<SaveAltIcon />}>
-                匯出總記錄
+            <Button sx={{ml:2}} variant="outlined" startIcon={<SaveAltIcon />} onClick={exportAllScore}>
+                汇出总记录
             </Button>
         </Box>
         <Box sx={{width:{xs: '90vw', sm: '80vw', md:'60vw', lg:'40vw'},
@@ -253,7 +263,7 @@ export function User() {
                     endIcon={<AddIcon style={{ color: 'white' }}/>}
                     onClick={()=>{setOpen(true);setOpenType('add')}}>
                     <Box sx={{ display: { xs: 'none', sm: 'flex' }}}>
-                        新增用戶
+                        新增用户
                     </Box>
                 </Button>
             </Box>
@@ -295,7 +305,7 @@ export function User() {
         </Box>
 
         <Dialog open={open} onClose={handleClose}>
-            <DialogTitle>{openType === 'add'? '新增用戶': '編輯用戶'}</DialogTitle>
+            <DialogTitle>{openType === 'add'? '新增用户': '编辑用户'}</DialogTitle>
             <DialogContent sx={{pb:'20px'}}>
                 <TextField
                     autoFocus
@@ -320,7 +330,7 @@ export function User() {
             </DialogActions>
         </Dialog>
         <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-            <DialogTitle>確認刪除用戶{input}</DialogTitle>
+            <DialogTitle>确认删除用户{input}</DialogTitle>
             <DialogActions sx={{display:'flex',justifyContent:'space-between'}}>
             <Button sx={{ml:'15px'}} variant="contained" onClick={handleConfirmClose}>Cancel</Button>
             <Button sx={{mr:'15px'}} variant="contained" color="secondary" onClick={deleteUser}>Delete</Button>

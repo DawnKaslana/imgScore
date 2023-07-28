@@ -4,8 +4,16 @@ const fs = require('fs');
 const imgFolder = './images/';
 
 const getFileList = (req, res) => {
+  console.log(req.query)
   let page = req.query.page
-  mysql('file').select('*')
+  let user_id = req.query.user_id
+  mysql('file')
+  .leftJoin('score', function() {
+    this
+      .on('file.file_name', '=', 'score.file_name')
+      .onIn('score.user_id', [user_id,null])
+  })
+  .select('file.file_id','file.file_name','score.score','user_id')
   .whereBetween('file_id', [page*10-9, page*10])
   .then((result)=>{
     res.send(result)
