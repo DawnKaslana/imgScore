@@ -202,6 +202,13 @@ export function User() {
         })
     }
 
+    const exportScore = (user_id, user_name) => {
+        api({url:'/exportScore',params:{user_id}})
+            .then((res)=>{
+                fileDownload(res.data, user_name+".csv")
+            })
+    }
+
     const exportAllScore = () => {
         api({url:'/exportAllScore'})
             .then((res)=>{
@@ -279,10 +286,16 @@ export function User() {
                 key={item.user_id}
                 disableGutters
                 >
-                    <ListItemButton sx={{marginRight:'40px'}} onClick={()=>setUserCookies(item)}>
+                    <ListItemButton sx={{marginRight:'85px'}} onClick={()=>setUserCookies(item)}>
                         <ListItemText primary={item.user_name} />
                     </ListItemButton>
                     <ListItemSecondaryAction>
+                        <IconButton aria-label="export"
+                            sx={{mr:2}}
+                            onClick={()=>exportScore(item.user_id, item.user_name)
+                            }>
+                            <SaveAltIcon color="primary"/>
+                        </IconButton>
                         <IconButton aria-label="comments" onClick={()=>{
                             setOpen(true)
                             setSelectUser(item.user_id)

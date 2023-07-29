@@ -72,54 +72,100 @@ const exportScore = (req, res) => {
         })
 }
 
-const getScore = (user_id) => {
+
+// exportAllScore
+const getScoreByUser = (user_id,user_name) => {
     return new Promise((resolve, reject) => {
-        mysql('user').rightJoin('score',{'user.user_id':'score.user_id'})
-            .select('file_name','user_name', 'score')
-            .where({'user.user_id':user_id})
-            .then((result)=>{
-                console.log(result)
-                resolve(result)
-            }).catch((err) => {
-                reject(err)
+        mysql('score').select('file_name', 'score')
+        .where({user_id})
+        .then((scoreResult)=>{
+            let result = {}
+            result[user_name] = {}
+            scoreResult.forEach(item=>{
+                result[user_name][item.file_name] = item.score
             })
+            resolve(result)
+        }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+const getScores = (users) => {
+    return new Promise((resolve, reject) => {
+        let funcArr = []
+        let result = {}
+
+        for(let user of users){
+            result[user.user_name] = {}
+            funcArr.push(getScoreByUser(user.user_id,user.user_name))
+        }
+
+        Promise.all(funcArr)
+        .then((v)=>{
+            v.forEach(item=>{
+                Object.assign(result,item)
+            })
+            resolve(result)
+        })
+        .catch((err) => reject(err));
+    })
+}
+
+const getUsers = () => {
+    return new Promise((resolve, reject) => {
+        mysql('user').select('*')
+        .then((result)=>{
+            resolve(result)
+        }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
+const getFiles = () => {
+    return new Promise((resolve, reject) => {
+        mysql('file').select('*')
+        .then((result)=>{
+            let fileList = []
+            result.forEach(item => {
+                fileList.push(item.file_name)
+            })
+            resolve(fileList)
+        }).catch((err) => {
+            reject(err)
+        })
     })
 }
 
 const exportAllScore = (req, res) => {
-    let fields = []
-    let fileList = []
-
-    mysql('user').select('*')
-        .then((result)=>{
-            result.forEach(item => {
-                fields.push(item.user_name)
+    let header = ['file_name']
+    getUsers().then(users => {
+        let userList = []
+        users.forEach(user=>{
+            header.push(user.user_name)
+            userList.push(user.user_name)
+        })
+        console.log(header)
+        getFiles().then(fileList => {
+            getScores(users).then(result => {
+                let output = header.toString()+'\n'
+                fileList.forEach(file=>{
+                    let score = ""
+                    userList.forEach(item =>{
+                        if (result[item][file]){
+                            score+=","+result[item][file]
+                        }else{
+                            score+=","
+                        }
+                    })
+                    output+=file+score+'\n'
+                    
+                })
+                res.send(output)
             })
-            console.log(fields)
-        }).catch((err) => {
-            console.error(err)
+        })
     })
-
-    //column1
-    mysql('file').select('*')
-        .then((result)=>{
-            result.forEach(item => {
-                fileList.push(item.file_name)
-            })
-            fields[0].file_name = fileList
-            console.log(fields)
-            //console.log(fileList)
-        }).catch((err) => {
-            console.error(err)
-    })
-
-    
-
-    //column2...
-    for (let i=1; i<fields.length; i++){
-        console.log(i)
-        fields[i][fields[i]] = getScore(i)
-    }
 }
 
 module.exports = {
