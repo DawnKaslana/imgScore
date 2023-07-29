@@ -194,7 +194,7 @@ export function Home() {
         // 如果對應id的錨點存在，就跳轉到錨點
         setPage(Math.ceil(fileId/10))
         if(anchorElement) { 
-            anchorElement.scrollIntoView({block: 'start'}) //behavior: 'smooth'
+            anchorElement.scrollIntoView({block: 'center'}) //behavior: 'smooth'
         }
         
         setOpen(false)
@@ -229,28 +229,29 @@ export function Home() {
 
     const checkFullScore = (value) => {
         return new Promise((resolve, reject) => {
-            let ok = true;
+            let fileId = null
             //if (value > page){
                 for (let item of fileList){
                     if (!item.score && !checkScore[item.file_name]) {
-                        ok = false; break;
+                        fileId = item.file_id; break;
                     }
                 }
             //}
-            resolve(ok)
+            resolve(fileId)
         })
     }
 
     const handlePageChange = (event, value) => {
         //檢查分數是否有空值
-        checkFullScore(value).then((ok)=>{
-            if (ok) {
+        checkFullScore(value).then((fileId)=>{
+            if (!fileId) {
                 saveScore()
                 setPage(value);
                 window.scrollTo(0, 0);
             } else {
                 setOpenAlert(true)
                 setAlert('error')
+                jumpToFile(fileId)
             }
         })
     }
