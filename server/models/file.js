@@ -13,7 +13,7 @@ const getFileList = (req, res) => {
       .on('file.file_name', '=', 'score.file_name')
       .onIn('score.user_id', [user_id,null])
   })
-  .select('file.file_id','file.file_name','score.score','user_id')
+  .select('file.file_id','file.file_name','score.score')
   .whereBetween('file_id', [page*10-9, page*10])
   .then((result)=>{
     res.send(result)

@@ -18,6 +18,20 @@ import MenuItem from '@mui/material/MenuItem';
 import Pagination from '@mui/material/Pagination';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import Grid from '@mui/material/Grid';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 
 //Icon import
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
@@ -26,6 +40,7 @@ import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import ContentPasteSearchIcon from '@mui/icons-material/ContentPasteSearch';
 import SaveIcon from '@mui/icons-material/Save';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 
 //api
 import api,{file_url} from '../api.js'
@@ -36,7 +51,7 @@ import fileDownload from 'js-file-download'
 //cookie
 const cookies = new Cookies();
 
-const NavBar = ({userId, userName, saveScore, exportScore}) => {
+const NavBar = ({userId, userName, saveScore, exportScore, checkAllScore}) => {
     const navigate = useNavigate();
 
     const logout = () => {
@@ -79,13 +94,13 @@ const NavBar = ({userId, userName, saveScore, exportScore}) => {
                 >
                     <MenuItem onClick={()=>{saveScore();handleClose();}}>
                         <SaveIcon sx={{mr:2}} />
-                        保存
+                        保存分数
                     </MenuItem>
                     <MenuItem onClick={()=>{exportScore();handleClose()}}>
                         <SaveAltIcon sx={{mr:2}} />
                         汇出纪录
                     </MenuItem>
-                    <MenuItem onClick={handleClose}>
+                    <MenuItem onClick={()=>{checkAllScore(userId);handleClose()}}>
                         <ContentPasteSearchIcon sx={{mr:2}} />
                         查看打分状况
                     </MenuItem>
@@ -131,6 +146,8 @@ const NavBar = ({userId, userName, saveScore, exportScore}) => {
 //Main
 export function Home() {
     const navigate = useNavigate();
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alert, setAlert] = useState('');
     const [open, setOpen] = useState(false);
     
     const [userId, setUserId] = useState(cookies.get('user_id'));
@@ -139,6 +156,7 @@ export function Home() {
     const [fileList, setFileList] = useState([]);
     const [saveScoreList, setSaveScoreList] = useState([]);
     const [checkScore, setCheckScore] = useState({});
+    const [noScoreList, setNoScoreList] = useState(null);
 
     const [maxPage, setMaxPage] = useState(1);
     const [page, setPage] = useState(1);
@@ -169,6 +187,19 @@ export function Home() {
             .then((res)=>setFileList(res.data))
     },[page]);
 
+    const jumpToFile = (fileId) => {
+        // 找到錨點
+        let anchorId = fileId%10
+        let anchorElement = document.getElementById(anchorId);
+        // 如果對應id的錨點存在，就跳轉到錨點
+        setPage(Math.ceil(fileId/10))
+        if(anchorElement) { 
+            anchorElement.scrollIntoView({block: 'start'}) //behavior: 'smooth'
+        }
+        
+        setOpen(false)
+      }
+
     const handleRadioChange = (file_name, value ) => {
         setSaveScoreList([
             ...saveScoreList,
@@ -178,11 +209,13 @@ export function Home() {
     }
 
     const saveScore = () => {
-        console.log('saveScoreList:')
-        console.log(saveScoreList)
         if (saveScoreList.length){
             api({url:'/saveScore',method:'put',data:{saveScoreList,user_id:userId}})
-            .then((res)=>{console.log(res.data)})
+            .then((res)=>{
+                //console.log(res.data)
+                setOpenAlert(true)
+                setAlert('success')
+            })
             setSaveScoreList([])
         }
     }
@@ -209,46 +242,138 @@ export function Home() {
     }
 
     const handlePageChange = (event, value) => {
-        //檢查空值
+        //檢查分數是否有空值
         checkFullScore(value).then((ok)=>{
             if (ok) {
                 saveScore()
                 setPage(value);
                 window.scrollTo(0, 0);
             } else {
-                setOpen(true)
+                setOpenAlert(true)
+                setAlert('error')
             }
         })
     }
 
+    const checkAllScore = () => {
+        //輸出10筆未打分圖片
+        api({url:'/checkScore',params:{user_id:userId}})
+            .then((res)=>{
+                setNoScoreList(res.data)
+                setOpen(true)
+            })
+    }
+
     return(
     <Box>
-        <NavBar userId={userId} userName={userName} saveScore={saveScore} exportScore={exportScore}/>
+        <NavBar userId={userId} userName={userName}
+                saveScore={saveScore}
+                exportScore={exportScore}
+                checkAllScore={checkAllScore}/>
 
         <Snackbar
             anchorOrigin={{vertical:'top',horizontal:'center'}}
-            open={open}
-            onClose={()=>setOpen(false)}
+            open={openAlert}
+            autoHideDuration={alert==='error'?null:2000}
+            onClose={()=>setOpenAlert(false)}
             sx={{width:'100%'}}>
-            <Alert icon={<ErrorOutlineIcon sx={{ fontSize: '1.2em' }} />} severity="error"
+            {
+                alert==='error'?
+                <Alert icon={<ErrorOutlineIcon sx={{ fontSize: '1.2em' }} />} severity="error"
+                    sx={{ width:'100%',
+                    mt:5,ml:1,mr:1,
+                    fontSize:'1.2em'}}>
+                    有图片未打分！
+                </Alert> :
+                <Alert icon={<TaskAltIcon sx={{ fontSize: '1.2em' }} />} severity="success"
                 sx={{ width:'100%',
                 mt:5,ml:1,mr:1,
                 fontSize:'1.2em'}}>
-                有图片未打分！
-            </Alert>
+                    保存成功！
+                </Alert>
+            }
         </Snackbar>
 
-        <Box sx={{pt:2,pb:2, display: 'flex',justifyContent:'center'}}>
-            <Pagination count={maxPage} page={page} onChange={handlePageChange}  variant="outlined" color="primary" />
-        </Box>
+        <Dialog
+        open={open}
+        onClose={()=>setOpen(false)}
+        fullWidth
+        >
+            <DialogTitle sx={{backgroundColor:'#0077cf',color:'white'}}>
+            此处显示10笔未打分图片（点击可跳转）
+            </DialogTitle>
+            <DialogContent dividers>
+            <Table aria-label="simple table">
+                <TableHead>
+                <TableRow>
+                    <TableCell>档案ID</TableCell>
+                    <TableCell>档案名称</TableCell>
+                    <TableCell align="right">所在页数</TableCell>
+                </TableRow>
+                </TableHead>
+                <TableBody>
+                {noScoreList?.map((row) => (
+                    <TableRow
+                    key={row.file_id}
+                    hover
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 },cursor:"pointer" }}
+                    onClick={()=>jumpToFile(row.file_id)}
+                    >
+                    <TableCell align="center">
+                        {row.file_id}
+                    </TableCell>
+                    <TableCell>
+                        {row.file_name}
+                    </TableCell>
+                    <TableCell align="center">
+                        {Math.ceil(row.file_id/10)}
+                    </TableCell>
+                    </TableRow>
+                ))}
+                </TableBody>
+            </Table>
+            </DialogContent>
+            <DialogActions>
+            <Button onClick={()=>setOpen(false)} autoFocus>
+                确认
+            </Button>
+            </DialogActions>
+        </Dialog>
 
-        {fileList?.map((item)=>(
-            <Box key={item.file_id}
-            sx={{
-                display: 'flex',
-                flexDirection:'column',
-                alignItem:'center',
-            }}>
+        <Grid sx={{mt:2,mb:2}} container>
+            <Grid item xs={0} sm={2}></Grid>
+            <Grid item xs={12} sm={8} sx={{display:'flex',justifyContent:'center',alignItem:'center'}}>
+            <Pagination sx={{pt:.5,pb:{xs:2,sm:0}}}
+                count={maxPage}
+                page={page}
+                onChange={handlePageChange}
+                variant="outlined"
+                color="primary" />
+            </Grid>
+            <Grid item xs={12} sm={2} sx={{textAlign: {xs:'center', sm:'right'}}}>
+                <FormControl sx={{width:{xs:'30%',sm:'100%'}}} size="small">
+                    <InputLabel>Page</InputLabel>
+                    <Select
+                        value={page}
+                        label="Page"
+                        onChange={(e)=>handlePageChange(e, e.target.value)}
+                    >
+                        {[...Array(maxPage).keys()].map(value=>{
+                            return <MenuItem key={value} value={value+1}>{value+1}</MenuItem>
+                        })}
+                    </Select>
+                </FormControl>
+            </Grid>
+        </Grid>
+        
+
+        {fileList?.map((item, index)=>(
+            <Box key={item.file_id} id={index+1}
+                sx={{
+                    display: 'flex',
+                    flexDirection:'column',
+                    alignItem:'center',
+                }}>
                 <Box sx={{ fontSize:"1.2rem",mt:'-3px',
                     border:'black 3px solid',
                     p:'10px',
@@ -267,7 +392,7 @@ export function Home() {
                     alignItem:'center',
                     justifyContent:'center'}}
                 >   
-                    <Box sx={{mt:1,mb:1,display: 'flex',justifyContent:'center'}}>
+                    <Box sx={{mt:1,mb:1,pl:{sx:0, md:12},display: 'flex',justifyContent:'center'}}>
                         <img src={file_url+item.file_name} width='512px'/>
                     </Box>
                     <RadioGroup sx={{
@@ -281,7 +406,7 @@ export function Home() {
                             <FormControlLabel
                                 labelPlacement="start" key={index+1}
                                 value={index+1}
-                                control={<Radio sx={{'& .MuiSvgIcon-root': {fontSize: {xs:20, sm:24},},}}/>}
+                                control={<Radio sx={{'& .MuiSvgIcon-root': {fontSize: {xs:20, sm:24},}}}/>}
                                 label={index+1} />
                         ))}
                     </RadioGroup>

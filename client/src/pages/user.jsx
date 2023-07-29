@@ -212,7 +212,6 @@ export function User() {
     const exportAllScore = () => {
         api({url:'/exportAllScore'})
             .then((res)=>{
-                
                 fileDownload(res.data, "all_user_score.csv")
             })
     }

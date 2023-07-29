@@ -2,6 +2,7 @@ const mysql = require('../mysql');
 const {stringify} = require('csv-stringify');
 
 
+// saveScore
 const isExist = (user_id, file_name) => {
     console.log(user_id,file_name)
     return new Promise((resolve, reject) => {
@@ -41,21 +42,20 @@ const putScore = (user_id, file_name, score) => {
 }
 
 const saveScore = (req, res) => {
-    console.log(req.body)
     let user_id = req.body.user_id
     let list = req.body.saveScoreList
 
     list.forEach((item)=>{
-        console.log(item)
         isExist(user_id, item.file_name).then((exist)=>{
             if (exist) putScore(user_id, item.file_name, item.score)
             else addScore(user_id, item.file_name, item.score)
         })
     })
 
-    res.send('score saved')
+    res.send('saved')
 }
 
+// exportScore
 const exportScore = (req, res) => {
     console.log(req.query)
     let user_id = req.query.user_id;
@@ -146,7 +146,6 @@ const exportAllScore = (req, res) => {
             header.push(user.user_name)
             userList.push(user.user_name)
         })
-        console.log(header)
         getFiles().then(fileList => {
             getScores(users).then(result => {
                 let output = header.toString()+'\n'
@@ -168,7 +167,28 @@ const exportAllScore = (req, res) => {
     })
 }
 
+//checkScore
+const checkScore = (req, res) => {
+    let user_id = req.query.user_id;
+    mysql('file')
+    .leftJoin('score', function() {
+      this
+        .on('file.file_name', '=', 'score.file_name')
+        .onIn('score.user_id', [user_id,null])
+    })
+    .select('file_id','file.file_name','score')
+    .whereNull('score')
+    .limit(10)
+    .then((result)=>{
+        res.send(result)
+    }).catch((err) => {
+        console.error(err)
+    })
+}
+
+
+
 module.exports = {
-    saveScore, exportScore, exportAllScore,
+    saveScore, exportScore, exportAllScore, checkScore
 }
 

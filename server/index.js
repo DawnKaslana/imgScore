@@ -44,10 +44,11 @@ app.get('/getFile', (req, res) => getFile(req, res));
 app.get('/updateFileList', (req, res) => updateFileList(req, res));
 app.get('/getFileNumber', (req, res) => getFileNumber(req, res));
 //score
-const {saveScore, exportScore, exportAllScore}  = require('./models/score');
+const {saveScore, exportScore, exportAllScore, checkScore}  = require('./models/score');
 app.put('/saveScore', (req, res) => saveScore(req, res));
 app.get('/exportScore', (req, res) => exportScore(req, res));
 app.get('/exportAllScore', (req, res) => exportAllScore(req, res));
+app.get('/checkScore', (req, res) => checkScore(req, res));
 
 
 
