@@ -4,7 +4,6 @@ const {stringify} = require('csv-stringify');
 
 // saveScore
 const isExist = (user_id, file_name) => {
-    console.log(user_id,file_name)
     return new Promise((resolve, reject) => {
       mysql('score').select('*').where({user_id, file_name})
       .then((result)=>{
@@ -51,13 +50,11 @@ const saveScore = (req, res) => {
             else addScore(user_id, item.file_name, item.score)
         })
     })
-
     res.send('saved')
 }
 
 // exportScore
 const exportScore = (req, res) => {
-    console.log(req.query)
     let user_id = req.query.user_id;
 
     mysql('score').select('file_name','score').where({user_id})

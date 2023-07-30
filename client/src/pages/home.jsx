@@ -92,7 +92,7 @@ const NavBar = ({userId, userName, saveScore, exportScore, checkAllScore}) => {
                     'aria-labelledby': 'menu-button',
                     }}
                 >
-                    <MenuItem onClick={()=>{saveScore();handleClose();}}>
+                    <MenuItem onClick={()=>{saveScore(true);handleClose();}}>
                         <SaveIcon sx={{mr:2}} />
                         保存分数
                     </MenuItem>
@@ -154,7 +154,7 @@ export function Home() {
     const [userName, setUserName] = useState(cookies.get('user_name'));
 
     const [fileList, setFileList] = useState([]);
-    const [saveScoreList, setSaveScoreList] = useState([]);
+    const [saveScoreList, setSaveScoreList] = useState({});
     const [checkScore, setCheckScore] = useState({});
     const [noScoreList, setNoScoreList] = useState(null);
 
@@ -190,7 +190,7 @@ export function Home() {
     const jumpToFile = (fileId) => {
         // 找到錨點
         let anchorId = fileId%10
-        let anchorElement = document.getElementById(anchorId);
+        let anchorElement = document.getElementById(anchorId?anchorId:10);
         // 如果對應id的錨點存在，就跳轉到錨點
         setPage(Math.ceil(fileId/10))
         if(anchorElement) { 
@@ -201,22 +201,28 @@ export function Home() {
       }
 
     const handleRadioChange = (file_name, value ) => {
-        setSaveScoreList([
-            ...saveScoreList,
-            { file_name, score: value }
-          ])
+        saveScoreList[file_name] = value
         checkScore[file_name] = value
     }
 
-    const saveScore = () => {
-        if (saveScoreList.length){
-            api({url:'/saveScore',method:'put',data:{saveScoreList,user_id:userId}})
+    const saveScore = (alert) => {
+        //console.log(saveScoreList)
+        let fileList = Object.keys(saveScoreList)
+
+        if (fileList.length){
+            let data = []
+            for (let file of fileList){
+                data.push({file_name:file, score:saveScoreList[file]})
+            }
+            api({url:'/saveScore',method:'put',data:{saveScoreList:data,user_id:userId}})
             .then((res)=>{
                 //console.log(res.data)
-                setOpenAlert(true)
-                setAlert('success')
+                if (alert){
+                    setOpenAlert(true)
+                    setAlert('success')
+                }
             })
-            setSaveScoreList([])
+            setSaveScoreList({})
         }
     }
 
