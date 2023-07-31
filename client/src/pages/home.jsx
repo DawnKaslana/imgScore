@@ -416,7 +416,7 @@ export function Home() {
                     alignItem:'center',
                     justifyContent:'center'}}
                 >
-                    <Chip label={item.file_name.split('/')[0]} size="small" sx={{mr:1}} color="info" />
+                    <Chip label={item.file_name.split('/')[0]} size="small" sx={{mr:1}} variant="outlined" color="info" />
                     <Chip label={item.file_name.split('/')[1]} size="small" sx={{mr:1}} variant="outlined" color="secondary"/>
                     {item.file_name.split('/')[2]}
                 </Box>
