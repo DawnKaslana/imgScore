@@ -1,7 +1,7 @@
 const mysql = require('../mysql');
 const fs = require('fs');
 
-const imgFolder = './images/';
+const imgFolder = './images';
 
 const getFileList = (req, res) => {
   console.log(req.query)
@@ -31,16 +31,23 @@ const getFileNumber = (req, res) => {
   })
 }
 
+const readDir = (filePath,files) => {
+  fs.readdirSync(filePath).forEach(item => {
+    let subfilePath = filePath+'/'+item
+    let stat = fs.statSync(subfilePath)
+    if(stat.isFile()) files.push({file_name:subfilePath.slice(9)})
+    else readDir(subfilePath,files)
+  })
+}
+
 const updateFileList = (req, res) => {
   let files = []
-  fs.readdirSync(imgFolder).forEach(file => {
-    files.push({file_name:file})
-  });
+  readDir(imgFolder,files)
+  console.log(files)
 
   mysql('file').truncate().then(()=>{
     mysql('file').insert(files)
     .then((result)=>{
-      console.log(result)
       res.send('updated')
     }).catch((err) => {
       console.error(err)
@@ -50,7 +57,7 @@ const updateFileList = (req, res) => {
 
 const getFile = (req, res) => {
   let filename = req.query.filename
-  fs.readFile(imgFolder+filename, function(err, originBuffer) {
+  fs.readFile(imgFolder+'/'+filename, function(err, originBuffer) {
     res.send(originBuffer)
     // 接下来该如何实现把读取的数据流保存为图片,  图片读取时编码格式固定为 utf8
   });

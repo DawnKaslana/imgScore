@@ -29,9 +29,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Chip from '@mui/material/Chip';
 
 //Icon import
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
@@ -41,6 +41,7 @@ import ContentPasteSearchIcon from '@mui/icons-material/ContentPasteSearch';
 import SaveIcon from '@mui/icons-material/Save';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 //api
 import api,{file_url} from '../api.js'
@@ -149,7 +150,8 @@ export function Home() {
     const [openAlert, setOpenAlert] = useState(false);
     const [alert, setAlert] = useState('');
     const [open, setOpen] = useState(false);
-    
+    const [openInfo, setOpenInfo] = useState(true);
+
     const [userId, setUserId] = useState(cookies.get('user_id'));
     const [userName, setUserName] = useState(cookies.get('user_name'));
 
@@ -205,7 +207,7 @@ export function Home() {
         checkScore[file_name] = value
     }
 
-    const saveScore = (alert) => {
+    const saveScore = (haveAlert) => {
         //console.log(saveScoreList)
         let fileList = Object.keys(saveScoreList)
 
@@ -217,7 +219,7 @@ export function Home() {
             api({url:'/saveScore',method:'put',data:{saveScoreList:data,user_id:userId}})
             .then((res)=>{
                 //console.log(res.data)
-                if (alert){
+                if (haveAlert){
                     setOpenAlert(true)
                     setAlert('success')
                 }
@@ -299,6 +301,31 @@ export function Home() {
                     保存成功！
                 </Alert>
             }
+        </Snackbar>
+
+        <Snackbar
+            anchorOrigin={{vertical:'top',horizontal:'center'}}
+            open={openInfo}
+            sx={{width:'100%'}}>
+                <Alert icon={<InfoOutlinedIcon sx={{ fontSize: '1.2em' }} />} severity="info"
+                sx={{ width:'100%',
+                mt:5,
+                fontSize:'1.2em'}}
+                action={
+                    <Button color="inherit" size="small"
+                    onClick={() => setOpenInfo(false)}
+                    sx={{
+                        m:0,p:0,
+                        fontFamily: 'SimHei', 
+                        fontSize:'1em',
+                        fontWeight: 400, 
+                    }}
+                    >
+                    确认
+                    </Button>
+                }>
+                    请给视觉质量更高的图像较高的分数
+                </Alert>
         </Snackbar>
 
         <Dialog
@@ -383,12 +410,15 @@ export function Home() {
                 }}>
                 <Box sx={{ fontSize:"1.2rem",mt:'-3px',
                     border:'black 3px solid',
-                    p:'10px',
+                    p:1,
                     display: 'flex',
+                    flexDirection:'row',
                     alignItem:'center',
                     justifyContent:'center'}}
                 >
-                    {item.file_name}
+                    <Chip label={item.file_name.split('/')[0]} size="small" sx={{mr:1}} color="info" />
+                    <Chip label={item.file_name.split('/')[1]} size="small" sx={{mr:1}} variant="outlined" color="secondary"/>
+                    {item.file_name.split('/')[2]}
                 </Box>
                 <Box sx={{
                     borderLeft:'black 3px solid',
