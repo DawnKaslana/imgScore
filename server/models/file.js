@@ -4,7 +4,6 @@ const fs = require('fs');
 const imgFolder = './images';
 
 const getFileList = (req, res) => {
-  //console.log(req.query)
   let page = req.query.page
   let user_id = req.query.user_id
   mysql('file')
@@ -43,7 +42,6 @@ const readDir = (filePath,files) => {
 const updateFileList = (req, res) => {
   let files = []
   readDir(imgFolder,files)
-  //console.log(files)
 
   mysql('file').truncate().then(()=>{
     mysql('file').insert(files)
@@ -57,6 +55,7 @@ const updateFileList = (req, res) => {
 
 const getFile = (req, res) => {
   let filename = req.query.filename
+
   fs.readFile(imgFolder+'/'+filename, function(err, originBuffer) {
     res.send(originBuffer)
     // 接下来该如何实现把读取的数据流保存为图片,  图片读取时编码格式固定为 utf8

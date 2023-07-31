@@ -430,7 +430,7 @@ export function Home() {
                     justifyContent:'center'}}
                 >   
                     <Box sx={{mt:1,mb:1,pl:{sx:0, md:12},display: 'flex',justifyContent:'center'}}>
-                        <img src={file_url+item.file_name} width='512px'/>
+                        <img src={file_url+encodeURIComponent(item.file_name)} width='512px'/>
                     </Box>
                     <RadioGroup sx={{
                         display: 'flex',
