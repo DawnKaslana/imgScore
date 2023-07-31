@@ -4,7 +4,7 @@ const fs = require('fs');
 const imgFolder = './images';
 
 const getFileList = (req, res) => {
-  console.log(req.query)
+  //console.log(req.query)
   let page = req.query.page
   let user_id = req.query.user_id
   mysql('file')
@@ -43,7 +43,7 @@ const readDir = (filePath,files) => {
 const updateFileList = (req, res) => {
   let files = []
   readDir(imgFolder,files)
-  console.log(files)
+  //console.log(files)
 
   mysql('file').truncate().then(()=>{
     mysql('file').insert(files)
